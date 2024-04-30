@@ -1,0 +1,2 @@
+# dzmgr
+DayZ management utility
