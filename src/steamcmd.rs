@@ -5,7 +5,7 @@ use std::process::Command;
 
 const STEAM_CMD: &str = "steamcmd";
 
-/// Trait to provide steamcmd functionality to std::process::Command.
+/// Trait to provide steamcmd functionality to [`Command`].
 pub trait SteamCmd {
     /// Create a new steamcmd command.
     fn new() -> Self;

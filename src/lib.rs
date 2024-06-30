@@ -1,4 +1,4 @@
-pub use steamcmd::SteamCmd_;
+pub use steamcmd::SteamCmd;
 
 mod config;
 mod steamcmd;

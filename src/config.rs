@@ -1,12 +1,13 @@
+use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+
+use server::Server;
+
 mod modification;
 mod server;
 
-use std::collections::{HashMap, HashSet};
-
-use serde::Deserialize;
-use server::Server;
-
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {
     servers: HashMap<String, Server>,
 }

@@ -1,9 +1,10 @@
 use std::collections::HashSet;
 
-use super::modification::Modification;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize)]
+use super::modification::Modification;
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Server {
     mods: Vec<Modification>,
 }
