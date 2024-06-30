@@ -5,48 +5,47 @@ use std::process::Command;
 
 const STEAM_CMD: &str = "steamcmd";
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct SteamCmd {
-    force_install_dir: Option<PathBuf>,
-    user: Option<String>,
+/// Trait to provide steamcmd functionality to std::process::Command.
+pub trait SteamCmd {
+    /// Force the installation directory. This needs to be called first.
+    fn force_install_dir(&mut self, dir: PathBuf) -> &mut Self;
+    /// Set the desired user.
+    fn user(&mut self, user: &str) -> &mut Self;
+    /// Install or update an app by ID.
+    fn app_update(&mut self, id: u32) -> &mut Self;
+    /// Validate the app after updating or installing.
+    fn validate(&mut self) -> &mut Self;
+    /// Install or update a workshop item.
+    fn workshop_download_item(&mut self, id: u32, workshop_item: u32) -> &mut Self;
+    /// Quit steamcmd. This should be called last.
+    fn quit(&mut self) -> &Self;
 }
 
-impl SteamCmd {
-    #[must_use]
-    pub const fn new(force_install_dir: Option<PathBuf>, user: Option<String>) -> Self {
-        Self {
-            force_install_dir,
-            user,
-        }
-    }
-    #[must_use]
-    pub fn app_update(&self, id: u32) -> Command {
-        let mut cmd = self.cmd();
-        cmd.arg("+app_update").arg(id.to_string()).arg("validate");
-        cmd
+impl SteamCmd for Command {
+    fn force_install_dir(&mut self, dir: PathBuf) -> &mut Self {
+        self.arg("+force_install_dir").arg(dir)
     }
 
-    #[must_use]
-    pub fn workshop_download_item(&self, id: u32, workshop_item: u32) -> Command {
-        let mut cmd = self.cmd();
-        cmd.arg("+workshop_download_item")
+    fn user(&mut self, user: &str) -> &mut Self {
+        self.arg("+login").arg(user)
+    }
+
+    fn app_update(&mut self, id: u32) -> &mut Self {
+        self.arg("+app_update").arg(id.to_string())
+    }
+
+    fn validate(&mut self) -> &mut Self {
+        self.arg("validate")
+    }
+
+    fn workshop_download_item(&mut self, id: u32, workshop_item: u32) -> &mut Self {
+        self.arg("+workshop_download_item")
             .arg(id.to_string())
-            .arg(workshop_item.to_string());
-        cmd
+            .arg(workshop_item.to_string())
     }
 
-    fn cmd(&self) -> Command {
-        let mut cmd = Command::new(steamcmd());
-
-        if let Some(force_install_dir) = &self.force_install_dir {
-            cmd.arg("+force_install_dir").arg(force_install_dir);
-        }
-
-        if let Some(user) = &self.user {
-            cmd.arg("+login").arg(user);
-        }
-
-        cmd
+    fn quit(&mut self) -> &Self {
+        self.arg("+quit")
     }
 }
 
