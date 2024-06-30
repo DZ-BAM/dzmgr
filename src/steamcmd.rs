@@ -44,10 +44,10 @@ impl SteamCmd for Command {
         self.arg("validate")
     }
 
-    fn workshop_download_item(&mut self, id: u32, workshop_item: u32) -> &mut Self {
+    fn workshop_download_item(&mut self, app_id: u32, item_id: u32) -> &mut Self {
         self.arg("+workshop_download_item")
-            .arg(id.to_string())
-            .arg(workshop_item.to_string())
+            .arg(app_id.to_string())
+            .arg(item_id.to_string())
     }
 
     fn quit(&mut self) -> &mut Self {
