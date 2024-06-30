@@ -20,7 +20,7 @@ pub trait SteamCmd {
     /// Install or update a workshop item.
     fn workshop_download_item(&mut self, id: u32, workshop_item: u32) -> &mut Self;
     /// Quit steamcmd. This should be called last.
-    fn quit(&mut self) -> &Self;
+    fn quit(&mut self) -> &mut Self;
 }
 
 impl SteamCmd for Command {
@@ -50,7 +50,7 @@ impl SteamCmd for Command {
             .arg(workshop_item.to_string())
     }
 
-    fn quit(&mut self) -> &Self {
+    fn quit(&mut self) -> &mut Self {
         self.arg("+quit")
     }
 }
