@@ -7,6 +7,8 @@ const STEAM_CMD: &str = "steamcmd";
 
 /// Trait to provide steamcmd functionality to std::process::Command.
 pub trait SteamCmd {
+    /// Create a new steamcmd command.
+    fn new() -> Self;
     /// Force the installation directory. This needs to be called first.
     fn force_install_dir(&mut self, dir: PathBuf) -> &mut Self;
     /// Set the desired user.
@@ -22,6 +24,10 @@ pub trait SteamCmd {
 }
 
 impl SteamCmd for Command {
+    fn new() -> Self {
+        Self::new(steamcmd())
+    }
+
     fn force_install_dir(&mut self, dir: PathBuf) -> &mut Self {
         self.arg("+force_install_dir").arg(dir)
     }
