@@ -10,9 +10,8 @@ pub struct SteamCmd {
     steamcmd: PathBuf,
     force_install_dir: Option<PathBuf>,
     user: Option<String>,
-    app_update: Vec<u32>,
+    app_update: Vec<(u32, bool)>,
     workshop_download_item: Vec<(u32, u32)>,
-    validate: bool,
 }
 
 impl SteamCmd {
@@ -26,7 +25,6 @@ impl SteamCmd {
             user: None,
             app_update: Vec::new(),
             workshop_download_item: Vec::new(),
-            validate: true,
         }
     }
 
@@ -52,15 +50,8 @@ impl SteamCmd {
 
     /// Update the app with the given ID.
     #[must_use]
-    pub fn app_update(mut self, id: u32) -> Self {
-        self.app_update.push(id);
-        self
-    }
-
-    /// Validate the installed app(s).
-    #[must_use]
-    pub const fn validate(mut self) -> Self {
-        self.validate = true;
+    pub fn app_update(mut self, id: u32, validate: bool) -> Self {
+        self.app_update.push((id, validate));
         self
     }
 
@@ -87,12 +78,12 @@ impl SteamCmd {
             command.arg("+login").arg(user);
         }
 
-        for app_id in self.app_update {
+        for (app_id, validate) in self.app_update {
             command.arg("+app_update").arg(app_id.to_string());
-        }
 
-        if self.validate {
-            command.arg("+validate");
+            if validate {
+                command.arg("validate");
+            }
         }
 
         for (app_id, item_id) in self.workshop_download_item {
