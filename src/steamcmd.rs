@@ -17,7 +17,7 @@ pub struct SteamCmd {
     force_install_dir: Option<PathBuf>,
     user: Option<String>,
     app_update: Vec<(App, bool)>,
-    workshop_download_item: Vec<WorkshopItem>,
+    workshop_download_item: Vec<(App, WorkshopItem)>,
 }
 
 impl SteamCmd {
@@ -66,11 +66,13 @@ impl SteamCmd {
 
     /// Download the given workshop item.
     #[must_use]
-    pub fn workshop_download_item<T>(mut self, item: T) -> Self
+    pub fn workshop_download_item<A, W>(mut self, app: A, workshop_item: W) -> Self
     where
-        T: Into<WorkshopItem>,
+        A: Into<App>,
+        W: Into<WorkshopItem>,
     {
-        self.workshop_download_item.push(item.into());
+        self.workshop_download_item
+            .push((app.into(), workshop_item.into()));
         self
     }
 
@@ -91,18 +93,18 @@ impl SteamCmd {
         }
 
         for (app, validate) in self.app_update {
-            command.arg("+app_update").arg(app.app_id().to_string());
+            command.arg("+app_update").arg(app.to_string());
 
             if validate {
                 command.arg("validate");
             }
         }
 
-        for workshop_item in self.workshop_download_item {
+        for (app, workshop_item) in self.workshop_download_item {
             command
                 .arg("+workshop_download_item")
-                .arg(workshop_item.app_id().to_string())
-                .arg(workshop_item.item_id().to_string());
+                .arg(app.to_string())
+                .arg(workshop_item.to_string());
         }
 
         command

@@ -1,27 +1,19 @@
+use std::fmt::Display;
+
 /// A Steam workshop item.
 #[derive(Clone, Copy, Debug)]
-pub struct WorkshopItem {
-    app_id: u32,
-    item_id: u32,
-}
+pub struct WorkshopItem(u32);
 
 impl WorkshopItem {
     /// Create a new `WorkshopItem`.
     #[must_use]
-    pub const fn new(app_id: u32, item_id: u32) -> Self {
-        Self { app_id, item_id }
+    pub const fn new(id: u32) -> Self {
+        Self(id)
     }
-
-    /// Return the app ID.
-    #[must_use]
-    pub const fn app_id(self) -> u32 {
-        self.app_id
-    }
-
     /// Return the item ID.
     #[must_use]
-    pub const fn item_id(self) -> u32 {
-        self.item_id
+    pub const fn id(self) -> u32 {
+        self.0
     }
 
     /// Return the URL to the Steam workshop website.
@@ -29,19 +21,25 @@ impl WorkshopItem {
     pub fn url(self) -> String {
         format!(
             "https://steamcommunity.com/sharedfiles/filedetails/?id={}",
-            self.item_id
+            self.0
         )
     }
 }
 
-impl From<(u32, u32)> for WorkshopItem {
-    fn from((app_id, item_id): (u32, u32)) -> Self {
-        Self::new(app_id, item_id)
+impl Display for WorkshopItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
     }
 }
 
-impl From<WorkshopItem> for (u32, u32) {
+impl From<u32> for WorkshopItem {
+    fn from(item_id: u32) -> Self {
+        Self::new(item_id)
+    }
+}
+
+impl From<WorkshopItem> for u32 {
     fn from(item: WorkshopItem) -> Self {
-        (item.app_id, item.item_id)
+        item.0
     }
 }
