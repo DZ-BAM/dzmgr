@@ -56,9 +56,12 @@ impl SteamCmd {
         self
     }
 
-    /// Quit `steamcmd`. This will also finish the build process and return the [`Command`].
+    /// Build a [`Command`] from the builder.
+    ///
+    /// Only use this method if you want to construct an interactive `steamcmd`.
+    /// Otherwise, use [`Self::quit()`] instead.
     #[must_use]
-    pub fn quit(self) -> Command {
+    pub fn build(self) -> Command {
         let mut command = Command::new(env::var_os("STEAMCMD").unwrap_or_else(|| STEAM_CMD.into()));
 
         if let Some(dir) = self.force_install_dir {
@@ -84,6 +87,13 @@ impl SteamCmd {
                 .arg(item_id.to_string());
         }
 
+        command
+    }
+
+    /// Quit `steamcmd`. This will also finish the build process and return the [`Command`].
+    #[must_use]
+    pub fn quit(self) -> Command {
+        let mut command = self.build();
         command.arg("+quit");
         command
     }
