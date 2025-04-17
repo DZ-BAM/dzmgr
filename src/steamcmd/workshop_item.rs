@@ -30,3 +30,9 @@ impl From<(u32, u32)> for WorkshopItem {
         Self::new(app_id, item_id)
     }
 }
+
+impl From<WorkshopItem> for (u32, u32) {
+    fn from(item: WorkshopItem) -> Self {
+        (item.app_id, item.item_id)
+    }
+}
