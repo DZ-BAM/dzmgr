@@ -5,8 +5,9 @@ use std::process::Command;
 const STEAM_CMD: &str = "steamcmd";
 
 /// Builder to construct a steamcmd invocation, returning a [`Command`].
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct SteamCmd {
+    steamcmd: PathBuf,
     force_install_dir: Option<PathBuf>,
     user: Option<String>,
     app_update: Vec<u32>,
@@ -15,6 +16,20 @@ pub struct SteamCmd {
 }
 
 impl SteamCmd {
+    pub fn new<T>(steamcmd: T) -> Self
+    where
+        T: Into<PathBuf>,
+    {
+        Self {
+            steamcmd: steamcmd.into(),
+            force_install_dir: None,
+            user: None,
+            app_update: Vec::new(),
+            workshop_download_item: Vec::new(),
+            validate: true,
+        }
+    }
+
     /// Force the installation directory to the given path.
     #[must_use]
     pub fn force_install_dir<T>(mut self, dir: T) -> Self
@@ -62,7 +77,7 @@ impl SteamCmd {
     /// Otherwise, use [`Self::quit()`] instead.
     #[must_use]
     pub fn build(self) -> Command {
-        let mut command = Command::new(env::var_os("STEAMCMD").unwrap_or_else(|| STEAM_CMD.into()));
+        let mut command = Command::new(self.steamcmd);
 
         if let Some(dir) = self.force_install_dir {
             command.arg("+force_install_dir").arg(dir);
@@ -96,5 +111,11 @@ impl SteamCmd {
         let mut command = self.build();
         command.arg("+quit");
         command
+    }
+}
+
+impl Default for SteamCmd {
+    fn default() -> Self {
+        Self::new(env::var_os("STEAMCMD").unwrap_or_else(|| STEAM_CMD.into()))
     }
 }
