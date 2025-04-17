@@ -14,13 +14,13 @@ impl WorkshopItem {
 
     /// Return the app ID.
     #[must_use]
-    pub const fn app_id(&self) -> u32 {
+    pub const fn app_id(self) -> u32 {
         self.app_id
     }
 
     /// Return the item ID.
     #[must_use]
-    pub const fn item_id(&self) -> u32 {
+    pub const fn item_id(self) -> u32 {
         self.item_id
     }
 }
