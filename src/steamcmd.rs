@@ -1,60 +1,90 @@
 use std::env;
-use std::ffi::OsString;
 use std::path::PathBuf;
 use std::process::Command;
 
 const STEAM_CMD: &str = "steamcmd";
 
-/// Trait to provide steamcmd functionality to [`Command`].
-pub trait SteamCmd {
-    /// Create a new steamcmd command.
-    fn new() -> Self;
-    /// Force the installation directory. This needs to be called first.
-    fn force_install_dir(&mut self, dir: PathBuf) -> &mut Self;
-    /// Set the desired user.
-    fn user(&mut self, user: &str) -> &mut Self;
-    /// Install or update an app by ID.
-    fn app_update(&mut self, id: u32) -> &mut Self;
-    /// Validate the app after updating or installing.
-    fn validate(&mut self) -> &mut Self;
-    /// Install or update a workshop item.
-    fn workshop_download_item(&mut self, id: u32, workshop_item: u32) -> &mut Self;
-    /// Quit steamcmd. This should be called last.
-    fn quit(&mut self) -> &mut Self;
+/// Builder to construct a steamcmd invocation, returning a [`Command`].
+#[derive(Debug, Default)]
+pub struct SteamCmd {
+    force_install_dir: Option<PathBuf>,
+    user: Option<String>,
+    app_update: Vec<u32>,
+    workshop_download_item: Vec<(u32, u32)>,
+    validate: bool,
 }
 
-impl SteamCmd for Command {
-    fn new() -> Self {
-        Self::new(steamcmd())
+impl SteamCmd {
+    /// Force the installation directory to the given path.
+    #[must_use]
+    pub fn force_install_dir<T>(mut self, dir: T) -> Self
+    where
+        T: Into<PathBuf>,
+    {
+        self.force_install_dir.replace(dir.into());
+        self
     }
 
-    fn force_install_dir(&mut self, dir: PathBuf) -> &mut Self {
-        self.arg("+force_install_dir").arg(dir)
+    /// Log in as the given user.
+    #[must_use]
+    pub fn user<T>(mut self, user: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.user.replace(user.into());
+        self
     }
 
-    fn user(&mut self, user: &str) -> &mut Self {
-        self.arg("+login").arg(user)
+    /// Update the app with the given ID.
+    #[must_use]
+    pub fn app_update(mut self, id: u32) -> Self {
+        self.app_update.push(id);
+        self
     }
 
-    fn app_update(&mut self, id: u32) -> &mut Self {
-        self.arg("+app_update").arg(id.to_string())
+    /// Validate the installed app(s).
+    #[must_use]
+    pub const fn validate(mut self) -> Self {
+        self.validate = true;
+        self
     }
 
-    fn validate(&mut self) -> &mut Self {
-        self.arg("validate")
+    /// Download the given workshop item.
+    #[must_use]
+    pub fn workshop_download_item(mut self, app_id: u32, item_id: u32) -> Self {
+        self.workshop_download_item.push((app_id, item_id));
+        self
     }
 
-    fn workshop_download_item(&mut self, app_id: u32, item_id: u32) -> &mut Self {
-        self.arg("+workshop_download_item")
-            .arg(app_id.to_string())
-            .arg(item_id.to_string())
-    }
+    /// Quit `steamcmd`. This will also finish the build process and return the [`Command`].
+    #[must_use]
+    pub fn quit(self) -> Command {
+        let mut command = Command::new(env::var_os("STEAMCMD").unwrap_or_else(|| STEAM_CMD.into()));
 
-    fn quit(&mut self) -> &mut Self {
-        self.arg("+quit")
-    }
-}
+        if let Some(dir) = self.force_install_dir {
+            command.arg("+force_install_dir").arg(dir);
+        }
 
-fn steamcmd() -> OsString {
-    env::var_os("STEAMCMD").unwrap_or_else(|| STEAM_CMD.into())
+        if let Some(user) = self.user {
+            command.arg("+login").arg(user);
+        }
+
+        for app_id in self.app_update {
+            command.arg("+app_update").arg(app_id.to_string());
+        }
+
+        if self.validate {
+            command.arg("+validate");
+        }
+
+        for (app_id, item_id) in self.workshop_download_item {
+            command
+                .arg("+workshop_download_item")
+                .arg(app_id.to_string())
+                .arg(item_id.to_string());
+        }
+
+        command.arg("+quit");
+        command
+    }
 }
