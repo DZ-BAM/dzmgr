@@ -23,6 +23,15 @@ impl WorkshopItem {
     pub const fn item_id(self) -> u32 {
         self.item_id
     }
+
+    /// Return the URL to the Steam workshop website.
+    #[must_use]
+    pub fn url(self) -> String {
+        format!(
+            "https://steamcommunity.com/sharedfiles/filedetails/?id={}",
+            self.item_id
+        )
+    }
 }
 
 impl From<(u32, u32)> for WorkshopItem {
