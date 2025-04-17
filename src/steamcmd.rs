@@ -2,6 +2,12 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
+pub use app::App;
+pub use workshop_item::WorkshopItem;
+
+mod app;
+mod workshop_item;
+
 const STEAM_CMD: &str = "steamcmd";
 
 /// Builder to construct a steamcmd invocation, returning a [`Command`].
@@ -10,8 +16,8 @@ pub struct SteamCmd {
     steamcmd: PathBuf,
     force_install_dir: Option<PathBuf>,
     user: Option<String>,
-    app_update: Vec<(u32, bool)>,
-    workshop_download_item: Vec<(u32, u32)>,
+    app_update: Vec<(App, bool)>,
+    workshop_download_item: Vec<WorkshopItem>,
 }
 
 impl SteamCmd {
@@ -50,15 +56,21 @@ impl SteamCmd {
 
     /// Update the app with the given ID.
     #[must_use]
-    pub fn app_update(mut self, id: u32, validate: bool) -> Self {
-        self.app_update.push((id, validate));
+    pub fn app_update<T>(mut self, app: T, validate: bool) -> Self
+    where
+        T: Into<App>,
+    {
+        self.app_update.push((app.into(), validate));
         self
     }
 
     /// Download the given workshop item.
     #[must_use]
-    pub fn workshop_download_item(mut self, app_id: u32, item_id: u32) -> Self {
-        self.workshop_download_item.push((app_id, item_id));
+    pub fn workshop_download_item<T>(mut self, item: T) -> Self
+    where
+        T: Into<WorkshopItem>,
+    {
+        self.workshop_download_item.push(item.into());
         self
     }
 
@@ -78,19 +90,19 @@ impl SteamCmd {
             command.arg("+login").arg(user);
         }
 
-        for (app_id, validate) in self.app_update {
-            command.arg("+app_update").arg(app_id.to_string());
+        for (app, validate) in self.app_update {
+            command.arg("+app_update").arg(app.app_id().to_string());
 
             if validate {
                 command.arg("validate");
             }
         }
 
-        for (app_id, item_id) in self.workshop_download_item {
+        for workshop_item in self.workshop_download_item {
             command
                 .arg("+workshop_download_item")
-                .arg(app_id.to_string())
-                .arg(item_id.to_string());
+                .arg(workshop_item.app_id().to_string())
+                .arg(workshop_item.item_id().to_string());
         }
 
         command
