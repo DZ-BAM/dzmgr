@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 /// Represents an app for `steamcmd`.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct App(u32);
 
 impl App {

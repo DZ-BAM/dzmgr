@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 /// A Steam workshop item.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct WorkshopItem(u32);
 
 impl WorkshopItem {
